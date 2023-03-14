@@ -1,0 +1,7 @@
+name: Commerce TouchNet uPay
+type: module
+description: Integration between UBC TouchNet uPay gateway and Commerce
+package: Commerce (contrib)
+core_version_requirement: ^9 || ^10
+dependencies:
+  - commerce:commerce_payment

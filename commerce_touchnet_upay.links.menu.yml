@@ -1,0 +1,6 @@
+commerce_touchnet_upay.settings_form:
+  title: 'Commerce TouchNet uPay'
+  description: 'Configure Commerce TouchNet uPay.'
+  parent: system.admin_config_system
+  route_name: commerce_touchnet_upay.settings_form
+  weight: 10

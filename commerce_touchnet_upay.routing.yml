@@ -1,0 +1,15 @@
+commerce_touchnet_upay.example:
+  path: '/commerce-touchnet-upay/example'
+  defaults:
+    _title: 'Example'
+    _controller: '\Drupal\commerce_touchnet_upay\Controller\CommerceTouchnetUpayController::build'
+  requirements:
+    _permission: 'access content'
+
+commerce_touchnet_upay.settings_form:
+  path: '/admin/config/system/commerce-touchnet-upay'
+  defaults:
+    _title: 'Commerce TouchNet uPay settings'
+    _form: 'Drupal\commerce_touchnet_upay\Form\SettingsForm'
+  requirements:
+    _permission: 'administer commerce payment gateway'

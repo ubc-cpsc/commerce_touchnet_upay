@@ -1,0 +1,8 @@
+# Schema for the configuration files of the Commerce TouchNet uPay module.
+commerce_touchnet_upay.settings:
+  type: config_object
+  label: 'Commerce TouchNet uPay settings'
+  mapping:
+    example:
+      type: string
+      label: 'Example'
