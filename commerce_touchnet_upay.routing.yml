@@ -1,7 +1,33 @@
-commerce_touchnet_upay.example:
-  path: '/commerce-touchnet-upay/example'
+commerce_touchnet_upay.success:
+  path: '/payment/success/{commerce_payment_gateway}'
   defaults:
-    _title: 'Example'
-    _controller: '\Drupal\commerce_touchnet_upay\Controller\CommerceTouchnetUpayController::build'
+    _title: 'Payment Successful'
+    _controller: '\Drupal\commerce_touchnet_upay\Controller\CommerceTouchnetUpayController::successPage'
   requirements:
-    _permission: 'access content'
+    _access: 'TRUE'
+  options:
+    parameters:
+      commerce_payment_gateway:
+        type: entity:commerce_payment_gateway
+commerce_touchnet_upay.error:
+  path: '/payment/error/{commerce_payment_gateway}'
+  defaults:
+    _title: 'Payment Error'
+    _controller: '\Drupal\commerce_touchnet_upay\Controller\CommerceTouchnetUpayController::errorPage'
+  requirements:
+    _access: 'TRUE'
+  options:
+    parameters:
+      commerce_payment_gateway:
+        type: entity:commerce_payment_gateway
+commerce_touchnet_upay.cancel:
+  path: '/payment/cancel/{commerce_payment_gateway}'
+  defaults:
+    _title: 'Payment Cancelled'
+    _controller: '\Drupal\commerce_touchnet_upay\Controller\CommerceTouchnetUpayController::cancelPage'
+  requirements:
+    _access: 'TRUE'
+  options:
+    parameters:
+      commerce_payment_gateway:
+        type: entity:commerce_payment_gateway
