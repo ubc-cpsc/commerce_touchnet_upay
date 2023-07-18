@@ -3,8 +3,8 @@
 namespace Drupal\commerce_touchnet_upay\Plugin\Commerce\PaymentGateway;
 
 use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OffsitePaymentGatewayBase;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OffsitePaymentGatewayInterface;
-use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\PaymentGatewayBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,16 +13,16 @@ use Symfony\Component\HttpFoundation\Request;
  * Provides the off-site payment gateway for UBC TouchNet uPay proxy.
  *
  * @CommercePaymentGateway(
- *   id = "touchnet_upay_redirect_checkout",
+ *   id = "touchnet_upay_offsite_redirect",
  *   label = @Translation("UBC Touchnet uPay Proxy (Off-site redirect)"),
  *   display_label = @Translation("UBC Touchnet uPay Proxy"),
  *   forms = {
- *     "offsite-payment" = "Drupal\commerce_touchnet_upay\PluginForm\RedirectCheckoutForm",
+ *     "offsite-payment" = "Drupal\commerce_touchnet_upay\PluginForm\PaymentOffsiteForm",
  *   },
  *   requires_billing_information = FALSE,
  * )
  */
-class RedirectCheckout extends PaymentGatewayBase implements OffsitePaymentGatewayInterface {
+class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymentGatewayInterface {
 
   /**
    * {@inheritdoc}
@@ -79,7 +79,20 @@ class RedirectCheckout extends PaymentGatewayBase implements OffsitePaymentGatew
    * {@inheritdoc}
    */
   public function onReturn(OrderInterface $order, Request $request) {
-
+    // @todo Add examples of request validation.
+    // Note: Since requires_billing_information is FALSE, the order is
+    // not guaranteed to have a billing profile. Confirm that
+    // $order->getBillingProfile() is not NULL before trying to use it.
+    $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
+    $payment = $payment_storage->create([
+      'state' => 'completed',
+      'amount' => $order->getBalance(),
+      'payment_gateway' => $this->parentEntity->id(),
+      'order_id' => $order->id(),
+      'remote_id' => $request->query->get('txn_id'),
+      'remote_state' => $request->query->get('payment_status'),
+    ]);
+    $payment->save();
   }
 
   /**
