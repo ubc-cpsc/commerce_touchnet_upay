@@ -3,30 +3,9 @@ commerce_touchnet_upay.settings:
   type: config_object
   label: 'Commerce TouchNet uPay settings'
   mapping:
-    server:
+    merchant_id:
       type: string
-      label: 'Server'
-    site_id:
+      label: 'Your Merchant ID with uPay Proxy'
+    merchant_store_id:
       type: string
-      label: 'Site ID'
-    success_link_text:
-      type: string
-      label: 'Success link text'
-    continue_link_text:
-      type: string
-      label: 'Continue link text'
-    error_link_text:
-      type: string
-      label: 'Error link text'
-    cancel_link_text:
-      type: string
-      label: 'Cancel link text'
-    validation_key:
-      type: string
-      label: 'Validation key'
-    credit_acct_code:
-      type: string
-      label: 'Credit acct code'
-    debit_acct_code:
-      type: string
-      label: 'Debit acct code'
+      label: 'Your Merchant Store ID with uPay Proxy'

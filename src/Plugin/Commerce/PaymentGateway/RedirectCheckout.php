@@ -3,10 +3,10 @@
 namespace Drupal\commerce_touchnet_upay\Plugin\Commerce\PaymentGateway;
 
 use Drupal\commerce_order\Entity\OrderInterface;
-use Drupal\commerce_payment\Entity\PaymentInterface;
-use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OffsitePaymentGatewayBase;
-use Drupal\commerce_price\Price;
+use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OffsitePaymentGatewayInterface;
+use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\PaymentGatewayBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -22,22 +22,15 @@ use Symfony\Component\HttpFoundation\Request;
  *   requires_billing_information = FALSE,
  * )
  */
-class RedirectCheckout extends OffsitePaymentGatewayBase {
+class RedirectCheckout extends PaymentGatewayBase implements OffsitePaymentGatewayInterface {
 
   /**
    * {@inheritdoc}
    */
   public function defaultConfiguration() {
     return [
-      'server' => '',
-      'site_id' => '',
-      'success_link_text' => '',
-      'continue_link_text' => '',
-      'error_link_text' => '',
-      'cancel_link_text' => '',
-      'validation_key' => '',
-      'credit_acct_code' => '',
-      'debit_acct_code' => '',
+      'merchant_id' => '',
+      'merchant_store_id' => '',
     ] + parent::defaultConfiguration();
   }
 
@@ -47,50 +40,15 @@ class RedirectCheckout extends OffsitePaymentGatewayBase {
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildConfigurationForm($form, $form_state);
 
-    $form['server'] = [
+    $form['merchant_id'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('TouchNet Server'),
-      '#default_value' => $this->configuration['server'],
+      '#title' => $this->t('Your Merchant ID with uPay Proxy'),
+      '#default_value' => $this->configuration['merchant_id'],
     ];
-    $form['site_id'] = [
+    $form['merchant_store_id'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Site ID'),
-      '#default_value' => $this->configuration['site_id'],
-    ];
-    $form['validation_key'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Validation key'),
-      '#default_value' => $this->configuration['validation_key'],
-    ];
-    $form['credit_acct_code'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Credit Account Code (Override)'),
-      '#default_value' => $this->configuration['credit_acct_code'],
-    ];
-    $form['debit_acct_code'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Debit Account Code (Override)'),
-      '#default_value' => $this->configuration['debit_acct_code'],
-    ];
-    $form['success_link_text'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Text For Success Link'),
-      '#default_value' => $this->configuration['success_link_text'],
-    ];
-    $form['continue_link_text'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Text For Continue Link'),
-      '#default_value' => $this->configuration['continue_link_text'],
-    ];
-    $form['error_link_text'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Text For Error Link'),
-      '#default_value' => $this->configuration['error_link_text'],
-    ];
-    $form['cancel_link_text'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Text For Cancel Link'),
-      '#default_value' => $this->configuration['cancel_link_text'],
+      '#title' => $this->t('Your Merchant Store ID with uPay Proxy'),
+      '#default_value' => $this->configuration['merchant_store_id'],
     ];
 
     return $form;
@@ -103,23 +61,18 @@ class RedirectCheckout extends OffsitePaymentGatewayBase {
     parent::submitConfigurationForm($form, $form_state);
     if (!$form_state->getErrors()) {
       $values = $form_state->getValue($form['#parents']);
-      $this->configuration['server'] = $values['server'];
-      $this->configuration['site_id'] = $values['site_id'];
-      $this->configuration['success_link_text'] = $values['success_link_text'];
-      $this->configuration['continue_link_text'] = $values['continue_link_text'];
-      $this->configuration['error_link_text'] = $values['error_link_text'];
-      $this->configuration['cancel_link_text'] = $values['cancel_link_text'];
-      $this->configuration['validation_key'] = $values['validation_key'];
-      $this->configuration['credit_acct_code'] = $values['credit_acct_code'];
-      $this->configuration['debit_acct_code'] = $values['debit_acct_code'];
+      $this->configuration['merchant_id'] = $values['merchant_id'];
+      $this->configuration['merchant_store_id'] = $values['merchant_store_id'];
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function onNotify(Request $request) {
-    return parent::onNotify($request);
+  public function getNotifyUrl(): Url {
+    return Url::fromRoute('commerce_payment.notify', [
+      'commerce_payment_gateway' => $this->parentEntity->id(),
+    ], ['absolute' => TRUE]);
   }
 
   /**
@@ -132,7 +85,16 @@ class RedirectCheckout extends OffsitePaymentGatewayBase {
   /**
    * {@inheritdoc}
    */
-  public function refundPayment(PaymentInterface $payment, Price $amount = NULL) {
+  public function onCancel(OrderInterface $order, Request $request) {
+    $this->messenger()->addMessage($this->t('You have canceled checkout at @gateway but may resume the checkout process here when you are ready.', [
+      '@gateway' => $this->getDisplayLabel(),
+    ]));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function onNotify(Request $request) {
 
   }
 
