@@ -1,6 +1,6 @@
-name: Commerce TouchNet uPay
+name: UBC Commerce TouchNet uPay Proxy
 type: module
-description: Integration between UBC TouchNet uPay gateway and Commerce
+description: Provides Commerce Integration with UBC's TouchNet uPay Proxy gateway
 package: Commerce (contrib)
 core_version_requirement: ^9 || ^10
 dependencies:
