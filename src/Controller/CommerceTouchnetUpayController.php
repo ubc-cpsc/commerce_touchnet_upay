@@ -10,7 +10,7 @@ use Drupal\Core\Controller\ControllerBase;
 class CommerceTouchnetUpayController extends ControllerBase {
 
   /**
-   * Builds the response.
+   * Builds the payment success response.
    */
   public function successPage() {
     // @todo Add real controller responses and routing or delete.

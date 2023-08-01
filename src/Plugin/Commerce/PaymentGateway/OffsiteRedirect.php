@@ -31,8 +31,11 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
    */
   public function defaultConfiguration() {
     return [
+      'base_uri' => '',
       'merchant_id' => '',
       'merchant_store_id' => '',
+      'merchant_proxy_key' => '',
+      'merchant_update_secret' => '',
     ] + parent::defaultConfiguration();
   }
 
@@ -41,16 +44,34 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildConfigurationForm($form, $form_state);
-
+    $form['base_uri'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('The uPay Proxy API base URI.'),
+      '#default_value' => $this->configuration['merchant_id'],
+    ];
     $form['merchant_id'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Your Merchant ID with uPay Proxy'),
+      '#title' => $this->t('Your Merchant ID'),
       '#default_value' => $this->configuration['merchant_id'],
     ];
     $form['merchant_store_id'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Your Merchant Store ID with uPay Proxy'),
+      '#title' => $this->t('Your Merchant Store ID'),
       '#default_value' => $this->configuration['merchant_store_id'],
+    ];
+    $form['merchant_proxy_key'] = [
+      '#type' => 'textfield',
+      '#disabled' => TRUE,
+      '#description' => 'This should be empty, override this config in your settings.',
+      '#title' => $this->t('Your secret key'),
+      '#default_value' => $this->configuration['merchant_proxy_key'],
+    ];
+    $form['merchant_update_secret'] = [
+      '#type' => 'textfield',
+      '#disabled' => TRUE,
+      '#description' => 'This should be empty, override this config in your settings.',
+      '#title' => $this->t('Your Merchant Store ID with uPay Proxy'),
+      '#default_value' => $this->configuration['merchant_update_secret'],
     ];
 
     return $form;
@@ -63,6 +84,7 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
     parent::submitConfigurationForm($form, $form_state);
     if (!$form_state->getErrors()) {
       $values = $form_state->getValue($form['#parents']);
+      $this->configuration['base_uri'] = $values['base_uri'];
       $this->configuration['merchant_id'] = $values['merchant_id'];
       $this->configuration['merchant_store_id'] = $values['merchant_store_id'];
     }
@@ -109,7 +131,7 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
     // Typically, you will also want to log the information returned by the provider.
     //    This method should only be concerned with creating/completing payments.
     // @see https://docs.drupalcommerce.org/commerce2/developer-guide/payments/create-payment-gateway/off-site-gateways/return-from-payment-provider#handling-payment-submission
-
+    $resource = (object) [];
     $metadata = $resource->metadata;
     // @todo Add examples of request validation.
     // Note: Since requires_billing_information is FALSE, the order is
