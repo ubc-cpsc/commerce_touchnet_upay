@@ -39,7 +39,6 @@ class PaymentOffsiteForm extends BasePaymentOffsiteForm {
     $data['merchantStoreId'] = $configuration['merchant_store_id'];
 
     // Payment details.
-    // @todo Determine if this should be a different value?
     $data['paymentRequestNumber'] = $payment->getOrderId();
     $data['paymentRequestAmount'] = $payment->getAmount()->getNumber();
 
