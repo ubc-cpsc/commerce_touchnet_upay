@@ -20,6 +20,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *   id = "touchnet_upay_offsite_redirect",
  *   label = @Translation("UBC Touchnet uPay Proxy (Off-site redirect)"),
  *   display_label = @Translation("UBC Touchnet uPay Proxy"),
+ *   modes = {
+ *     "n/a" = @Translation("N/A"),
+ *   },
  *   forms = {
  *     "offsite-payment" = "Drupal\commerce_touchnet_upay\PluginForm\PaymentOffsiteForm",
  *   },
