@@ -6,10 +6,12 @@ use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OffsitePaymentGatewayBase;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OffsitePaymentGatewayInterface;
 use Drupal\commerce_price\Price;
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Provides the off-site payment gateway for UBC TouchNet uPay proxy.
@@ -116,31 +118,76 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
 
   /**
    * {@inheritdoc}
+   *
+   * This method is responsible for:
+   *  - Performing verifications, throwing exceptions as needed.
+   *  - Creating and saving information to the Commerce payment for an order.
    */
   public function onNotify(Request $request):Response|null {
-    // @todo Only create payment entities on successful payments.
+    // Show nothing if anonymous user accesses this
+    // /payment/notify/{commerce_payment_gateway} page.
+    if ($request->getMethod() === 'GET') {
+      throw new NotFoundHttpException();
+    }
+
+    $logger = \Drupal::logger('commerce_touchnet_upay');
+    // Only create payment entities on successful payments.
+
     // 1. Request is validated
     // If validation fails: return new JsonResponse($exception->getMessage(), $exception->getCode());
 
+    // 1. Verify this matches:'merchantUpdateSecret'
+    // 2.paymentStatus == success, else cancelled = cancel order?
+    // 3. paymentAmount matches order total
+    $chargedAmount = $transactionData['charged_amount'];
+    $orderAmount = $order->getTotalPrice()->getNumber();
+    if ($orderAmount != $chargedAmount) {
+      $logger->warning('Charged Amount is: ' . $chargedAmount . ' while Order Amount: ' . $orderAmount);
+      throw new PaymentGatewayException('Charged amount not equal to order amount.');
+    }
 
-    // @todo This method is responsible for:
-    //
-    //    performing verifications, throwing exceptions as needed
-    //    creating and saving information to the Drupal Commerce payment for the order
-    //
+    // Data available after validation:
+    //    merchantUpdateSecret
+    //    paymentRequestNumber
+    //    paymentStatus
+    //    paymentAmount
+    //    paymentDate
+    //    paymentType
+    //    paymentCardType
+    //    uPayTrackingId (order id?)
+    //    paymentGatewayReferenceNumber (remote id)
+
+    // Valid Responses:
+    //  200	Payment status update processed successfully
+    //  400	Payment status update request does not comply with API specifications
+    //  401	Invalid credentials supplied with the update request
+    //  404	Incorrect URL for Payment status update posting
+    //  500	A Merchant Web site processing error
+    //  503	Service Unavailable
+
+
+    // Log the response message if request logging is enabled.
+    // @todo Log only when requested.
+    if (TRUE || !empty($this->configuration['api_logging'])) {
+      \Drupal::logger('commerce_touchnet_upay')
+        ->debug('e-Commerce notification: <pre>@body</pre>', [
+          '@body' => var_export($request->query->all(), TRUE),
+        ]);
+    }
+
     // Typically, you will also want to log the information returned by the provider.
     //    This method should only be concerned with creating/completing payments.
     // @see https://docs.drupalcommerce.org/commerce2/developer-guide/payments/create-payment-gateway/off-site-gateways/return-from-payment-provider#handling-payment-submission
     $resource = (object) [];
     $metadata = $resource->metadata;
-    // @todo Add examples of request validation.
-    // Note: Since requires_billing_information is FALSE, the order is
-    // not guaranteed to have a billing profile. Confirm that
-    // $order->getBillingProfile() is not NULL before trying to use it.
+
+    /** @var \Drupal\commerce_payment\PaymentStorageInterface $payment_storage */
     $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
     $payment = $payment_storage->create([
       'state' => 'completed',
-      'amount' => new Price($resource->amount / 100, $resource->currency),
+
+      // @todo use getCurrencyCode() or get from db
+      'amount' => new Price($resource->amount / 100, 'CAD'),
 //      'amount' => $order->getBalance(),
       // 'amount' => $order->getTotalPrice(),
       'payment_gateway' => $this->parentEntity->id(),
