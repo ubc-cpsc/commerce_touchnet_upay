@@ -1,0 +1,14 @@
+{
+    "name": "ubc-cpsc/commerce_touchnet_upay",
+    "description": "Provides Commerce Integration with UBC's TouchNet uPay Proxy payment gateway",
+    "type": "drupal-module",
+    "keywords": [
+        "Drupal",
+        "Commerce"
+    ],
+    "homepage": "https://github.com/ubc-cpsc/commerce_touchnet_upay",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "drupal/commerce": "^2.0"
+    }
+}
