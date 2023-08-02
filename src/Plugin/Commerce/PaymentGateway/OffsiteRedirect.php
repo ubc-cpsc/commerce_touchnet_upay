@@ -164,9 +164,7 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
     // Log the response message if request logging is enabled.
     // @todo Log only when requested.
     if (TRUE || !empty($this->configuration['api_logging'])) {
-      $logger->debug('uPay onNotify: <pre>@body</pre> <pre>@content</pre> <pre>@data</pre>', [
-        '@body' => var_export($request->query->all(), TRUE),
-        '@content' => var_export($request->getContent(), TRUE),
+      $logger->debug('uPay onNotify: <pre>@data</pre>', [
         '@data' => var_export($data, TRUE),
       ]);
     }
@@ -199,7 +197,7 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
     // 4. paymentAmount matches order total
     $chargedAmount = $data['paymentAmount'] ?? NULL;
     $orderAmount = $order->getTotalPrice()->getNumber();
-    if ($orderAmount !== $chargedAmount) {
+    if ($orderAmount != $chargedAmount) {
       // @todo Add better response and log.
       $logger->warning('Charged Amount is: ' . $chargedAmount . ' while Order Amount: ' . $orderAmount);
       throw new PaymentGatewayException('Charged amount not equal to order amount.');
