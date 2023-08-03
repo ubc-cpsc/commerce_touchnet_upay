@@ -18,3 +18,6 @@ commerce_touchnet_upay.settings:
     merchant_update_secret:
       type: string
       label: 'Your shared secret to validate the request sender'
+    debug_log:
+      type: boolean
+      label: 'Enable/Disable debug logging'
