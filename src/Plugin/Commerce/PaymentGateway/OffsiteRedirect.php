@@ -160,9 +160,10 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
 
     // Log the response message if request logging is enabled.
     if (!empty($this->configuration['debug_log'])) {
-      $logger->debug('uPay onNotify: <pre>@data</pre> Query:<pre>@query</pre>', [
+      $logger->debug('uPay onNotify: <pre>@data</pre> Content:<pre>@content</pre> Headers:<pre>@headers</pre>', [
         '@data' => var_export($data, TRUE),
-        '@query' => var_export($request->query->all(), TRUE),
+        '@content' => var_export($request->getContent(), TRUE),
+        '@headers' => var_export($request->headers, TRUE),
       ]);
     }
 
@@ -211,8 +212,8 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
       'amount' => $order->getTotalPrice(),
       'payment_gateway' => $this->parentEntity->id(),
       'order_id' => $order->id(),
-      'remote_id' => $request->query->get('uPayTrackingId'),
-      'remote_state' => $request->query->get('paymentStatus'),
+      'remote_id' => $data['uPayTrackingId'],
+      'remote_state' => $data['paymentStatus'],
     ]);
 
     try {
