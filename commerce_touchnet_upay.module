@@ -4,3 +4,35 @@
  * @file
  * Primary module hooks for Commerce TouchNet uPay module.
  */
+
+/**
+ * Implements hook_workflows_alter().
+ */
+function commerce_touchnet_upay_workflows_alter(array &$workflows) {
+  // Add refunded state to every order workflow.
+  foreach ($workflows as $key => $workflow) {
+    switch ($key) {
+      case 'order_default':
+      case 'order_default_validation':
+        $from_transition = ['completed'];
+        break;
+
+      case 'order_fulfillment':
+      case 'order_fulfillment_validation':
+        $from_transition = ['fulfillment', 'completed'];
+        break;
+
+      default:
+        $from_transition = '';
+        break;
+    }
+    if ($from_transition) {
+      $workflows[$key]['states']['refunded'] = ['label' => 'Refunded'];
+      $workflows[$key]['transitions']['refund'] = [
+        'label' => 'Refund order',
+        'from' => $from_transition,
+        'to' => 'refunded',
+      ];
+    }
+  }
+}
