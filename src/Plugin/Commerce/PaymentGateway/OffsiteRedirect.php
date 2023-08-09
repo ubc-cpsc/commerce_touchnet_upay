@@ -40,6 +40,7 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
       'merchant_store_id' => '',
       'merchant_proxy_key' => '',
       'merchant_update_secret' => '',
+      'debug_log' => '',
     ] + parent::defaultConfiguration();
   }
 
@@ -77,6 +78,11 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
       '#title' => $this->t('Your Merchant Store ID with uPay Proxy'),
       '#default_value' => $this->configuration['merchant_update_secret'],
     ];
+    $form['debug_log'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Log the notification request while debugging?'),
+      '#default_value' => $this->configuration['debug_log'],
+    ];
 
     return $form;
   }
@@ -91,6 +97,7 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
       $this->configuration['base_uri'] = $values['base_uri'];
       $this->configuration['merchant_id'] = $values['merchant_id'];
       $this->configuration['merchant_store_id'] = $values['merchant_store_id'];
+      $this->configuration['debug_log'] = $values['debug_log'];
     }
   }
 
@@ -160,10 +167,8 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
 
     // Log the response message if request logging is enabled.
     if (!empty($this->configuration['debug_log'])) {
-      $logger->debug('uPay onNotify: <pre>@data</pre> Content:<pre>@content</pre> Headers:<pre>@headers</pre>', [
+      $logger->debug('uPay OffsiteRedirect::onNotify() data: <pre>@data</pre>', [
         '@data' => var_export($data, TRUE),
-        '@content' => var_export($request->getContent(), TRUE),
-        '@headers' => var_export($request->headers, TRUE),
       ]);
     }
 
