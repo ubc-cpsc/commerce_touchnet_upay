@@ -52,7 +52,7 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
     $form['base_uri'] = [
       '#type' => 'textfield',
       '#title' => $this->t('The uPay Proxy API base URI.'),
-      '#default_value' => $this->configuration['merchant_id'],
+      '#default_value' => $this->configuration['base_uri'],
     ];
     $form['merchant_id'] = [
       '#type' => 'textfield',
