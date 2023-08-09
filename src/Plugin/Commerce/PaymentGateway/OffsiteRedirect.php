@@ -121,7 +121,9 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
    * {@inheritdoc}
    */
   public function onCancel(OrderInterface $order, Request $request) {
-    // @todo Test when this is used and if you can continue to checkout again.
+    $order->getState()->applyTransitionById('cancel');
+    $order->save();
+
     $this->messenger()->addMessage($this->t('You have canceled checkout at @gateway but may resume the checkout process here when you are ready.', [
       '@gateway' => $this->getDisplayLabel(),
     ]));
@@ -178,14 +180,7 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
       return new Response('Unauthorized to update the transaction', Response::HTTP_UNAUTHORIZED);
     }
 
-    // 2. When 'paymentStatus' is not 'success' Cancel the order.
-    if (empty($data['paymentStatus']) || $data['paymentStatus'] !== 'success') {
-      // @todo Determine if we need to set the status of the order here?
-      $logger->warning('Order cancelled');
-      return NULL;
-    }
-
-    // 3. Check if the order can be loaded from the 'paymentRequestNumber'.
+    // 2. Check if the order can be loaded from the 'paymentRequestNumber'.
     $order_id = $data['paymentRequestNumber'] ?? 0;
     /** @var \Drupal\commerce_order\OrderStorageInterface $order_storage */
     $order_storage = $this->entityTypeManager->getStorage('commerce_order');
@@ -196,6 +191,13 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
         '%order_id' => $order_id,
       ]);
       throw new PaymentGatewayException('Invalid order number');
+    }
+
+    // 3. When 'paymentStatus' is not 'success' Cancel the order.
+    if (empty($data['paymentStatus']) || $data['paymentStatus'] !== 'success') {
+      $logger->warning('Order cancelled');
+      $this->onCancel($order, $request);
+      return NULL;
     }
 
     // 4. Compare 'paymentAmount' matches order total.

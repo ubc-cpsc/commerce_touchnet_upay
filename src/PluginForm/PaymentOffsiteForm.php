@@ -42,6 +42,14 @@ class PaymentOffsiteForm extends BasePaymentOffsiteForm {
     $data['paymentRequestNumber'] = $payment->getOrderId();
     $data['paymentRequestAmount'] = $payment->getAmount()->getNumber();
 
+    // Transition the order to placed.
+    $order = $payment->getOrder();
+    if (!$order) {
+      throw new \InvalidArgumentException('Payment entity with no order reference given to PaymentOffsiteForm.');
+    }
+    $order->getState()->applyTransitionById('place');
+    $order->save();
+
     // Build proxy hash seed to verify the payment request.
     $proxyHashSeed = $configuration['merchant_proxy_key'] . $data['paymentRequestNumber'] . $data['paymentRequestAmount'];
     $data['proxyHash'] = base64_encode(md5($proxyHashSeed, TRUE));
