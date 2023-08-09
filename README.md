@@ -30,20 +30,26 @@ UBC integration of TouchNet uPay with Commerce 2
 
 # Endpoints for DPP
 
-You'll be asked for the endpoints and commerce will generate paths based on the machine name of the payment gateway.
+You'll be asked for the endpoints and commerce will generate paths based on the **machine name of the payment gateway**.
 
-For example: we named all of our Payment Gateway configs `upay` and our URLs look like this:
+We named all of our Payment Gateway machine name as `upay` and the generated paths look like this:
 
-## Staging:
+- Endpoint Path: `/payment/notify/upay`
+- Success Link Path: `/payment/success/upay`
+- Error Link Path: `/payment/error/upay`
+- Cancel Link Path: `/payment/cancel/upay`
 
-- Endpoint URL: https://stg-example.ubc.ca/payment/notify/upay
-- Success Link URL: https://stg-example.ubc.ca/payment/success/upay
-- Error Link URL: https://stg-example.ubc.ca/payment/error/upay
-- Cancel Link URL: https://stg-example.ubc.ca/payment/cancel/upay
+Append the above paths on to your **Staging** or **Production** environment base URI:
+## Example
+Staging Endpoint URL: `https://stg-example.ubc.ca/payment/notify/upay`
 
-## Production:
+# Caveats
 
-- Endpoint URL: https://example.ubc.ca/payment/notify/upay
-- Success Link URL: https://example.ubc.ca/payment/success/upay
-- Error Link URL: https://example.ubc.ca/payment/error/upay
-- Cancel Link URL: https://example.ubc.ca/payment/cancel/upay
+* We have yet to implement (due to demand) a way to change any of the WorkDay overrides for a specific product, order, or store.
+* There is a `refunded` workflow state and `refund` transition added to all workflows. There is no logic tied to that additional transition.
+* We haven't added any other order statuses as was available in Drupal 7, like `pending`, we will keep it in `draft` to keep it simple for now.
+* The `remote_id` is mapped to the value of the `uPayTrackingId`, currently not storing the `paymentGatewayReferenceNumber`
+* We are not using `modes` like `live` or `test` because it's easier and less confusing to set that with the environment variables in `settings.php`.
+* The **Success**, **Error**, and **Cancel** URLs are presentational only, you can replace the messaging or give a custom page if you prefer.
+
+If you need any of the above please feel free to [request it](https://github.com/ubc-cpsc/commerce_touchnet_upay/issues/new).

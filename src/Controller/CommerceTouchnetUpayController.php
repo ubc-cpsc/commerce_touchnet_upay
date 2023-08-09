@@ -27,7 +27,7 @@ class CommerceTouchnetUpayController extends ControllerBase {
   public function errorPage() {
     $build['content'] = [
       '#type' => 'item',
-      '#markup' => $this->t('There was an error with your payment'),
+      '#markup' => $this->t('There was an error with your payment.'),
     ];
 
     return $build;
@@ -39,7 +39,7 @@ class CommerceTouchnetUpayController extends ControllerBase {
   public function cancelPage() {
     $build['content'] = [
       '#type' => 'item',
-      '#markup' => $this->t('You cancelled your payment'),
+      '#markup' => $this->t('You cancelled your payment.'),
     ];
 
     return $build;
