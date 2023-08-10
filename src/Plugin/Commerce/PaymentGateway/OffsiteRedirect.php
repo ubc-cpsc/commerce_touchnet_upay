@@ -17,8 +17,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *
  * @CommercePaymentGateway(
  *   id = "touchnet_upay_offsite_redirect",
- *   label = @Translation("UBC Touchnet uPay Proxy (Off-site redirect)"),
- *   display_label = @Translation("UBC Touchnet uPay Proxy"),
+ *   label = @Translation("UBC TouchNet uPay Proxy (Off-site redirect)"),
+ *   display_label = @Translation("UBC TouchNet uPay Proxy"),
  *   modes = {
  *     "n/a" = @Translation("N/A"),
  *   },
