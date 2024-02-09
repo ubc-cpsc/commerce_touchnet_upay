@@ -196,10 +196,11 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
       throw new PaymentGatewayException('Invalid order number');
     }
 
-    // 3. After an order has been completed, because of slow traffic, user may
-    // think that a payment is unsuccessful and will try to make payments again
-    // for the same order. So, if an order has been previously completed,
-    // 'paymentStatus' can be disregarded, and we can exit early.
+    // 3. After orders are completed, if network traffic is slow, users may not
+    // be notified about order completion in a timely manner, so they may try to
+    // make payments again for the same order. Thus, if an order has been
+    // previously completed, 'paymentStatus' can be disregarded, and we can exit
+    // early.
     if ($order->getState()->getId() === 'completed') {
       $logger->info('Order ' . $order_id . ' has been previously completed');
       return NULL;
