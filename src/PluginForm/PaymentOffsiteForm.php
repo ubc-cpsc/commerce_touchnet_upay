@@ -14,6 +14,11 @@ use Drupal\Core\Form\FormStateInterface;
 class PaymentOffsiteForm extends BasePaymentOffsiteForm {
 
   /**
+   * Separator between order id and suffix
+   */
+  public const ORDER_ID_SUFFIX_SEPARATOR = '_';
+
+    /**
    * Build a redirect URL to UBC uPay Proxy with the payment request data.
    *
    * Build an array of data for the request to the payment provider
@@ -39,7 +44,10 @@ class PaymentOffsiteForm extends BasePaymentOffsiteForm {
     $data['merchantStoreId'] = $configuration['merchant_store_id'];
 
     // Payment details.
-    $data['paymentRequestNumber'] = $payment->getOrderId();
+    // Make paymentRequestNumber unique by appending a separator and current
+    // Unix timestamp to order id because TouchNet rejects any previously used
+    // payment request number.
+    $data['paymentRequestNumber'] = $payment->getOrderId() . self::ORDER_ID_SUFFIX_SEPARATOR . time();
     $data['paymentRequestAmount'] = $payment->getAmount()->getNumber();
 
     // Build proxy hash seed to verify the payment request.
