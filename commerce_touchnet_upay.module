@@ -9,8 +9,19 @@
  * Implements hook_workflows_alter().
  */
 function commerce_touchnet_upay_workflows_alter(array &$workflows) {
-  // Add refunded state to every order workflow.
   foreach ($workflows as $key => $workflow) {
+    // Let canceled state go to completed state in every order workflow.
+    if ($workflow['group'] === 'commerce_order') {
+      foreach ($workflow['transitions'] as $transition_key => $transition) {
+        if ($transition['to'] === 'completed') {
+          $from = $workflows[$key]['transitions'][$transition_key]['from'];
+          $from[] = 'canceled';
+          $workflows[$key]['transitions'][$transition_key]['from'] = array_unique($from);
+        }
+      }
+    }
+
+    // Add refunded state to every order workflow.
     switch ($key) {
       case 'order_default':
       case 'order_default_validation':

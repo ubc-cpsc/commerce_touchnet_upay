@@ -6,6 +6,7 @@ use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Exception\PaymentGatewayException;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OffsitePaymentGatewayBase;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OffsitePaymentGatewayInterface;
+use Drupal\commerce_touchnet_upay\PluginForm\PaymentOffsiteForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
@@ -181,7 +182,10 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
     }
 
     // 2. Check if the order can be loaded from the 'paymentRequestNumber'.
-    $order_id = $data['paymentRequestNumber'] ?? 0;
+    // Remove separator and suffix (if they exist) from paymentRequestNumber.
+    $order_id_parts = explode(PaymentOffsiteForm::ORDER_ID_SUFFIX_SEPARATOR, $data['paymentRequestNumber']);
+    $order_id = $order_id_parts[0] ?? 0;
+
     /** @var \Drupal\commerce_order\OrderStorageInterface $order_storage */
     $order_storage = $this->entityTypeManager->getStorage('commerce_order');
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
@@ -193,14 +197,25 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
       throw new PaymentGatewayException('Invalid order number');
     }
 
-    // 3. When 'paymentStatus' is not 'success' Cancel the order.
-    if (empty($data['paymentStatus']) || $data['paymentStatus'] !== 'success') {
-      $logger->warning('Order cancelled');
-      $this->onCancel($order, $request);
+    // 3. After orders are completed, if network traffic is slow, users may not
+    // be notified about order completion in a timely manner, so they may try to
+    // make payments again for the same order. Thus, if an order has been
+    // previously completed, 'paymentStatus' can be disregarded, and we can exit
+    // early.
+    if ($order->getState()->getId() === 'completed') {
+      $logger->info('Order ' . $order_id . ' has been previously completed');
       return NULL;
     }
 
-    // 4. Compare 'paymentAmount' matches order total.
+    // 4. When 'paymentStatus' is not 'success', exit early.
+    if (empty($data['paymentStatus']) || $data['paymentStatus'] !== 'success') {
+      $logger->warning('paymentStatus for order %order_id is either empty or unsuccessful', [
+        '%order_id' => $order_id
+      ]);
+      return NULL;
+    }
+
+    // 5. Compare 'paymentAmount' matches order total.
     $charged_amount = (float) $data['paymentAmount'] ?? NULL;
     $order_amount = (float) $order->getTotalPrice()->getNumber();
     if ($order_amount !== $charged_amount) {
