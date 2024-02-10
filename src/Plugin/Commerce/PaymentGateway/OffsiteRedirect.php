@@ -183,7 +183,8 @@ class OffsiteRedirect extends OffsitePaymentGatewayBase implements OffsitePaymen
 
     // 2. Check if the order can be loaded from the 'paymentRequestNumber'.
     // Remove separator and suffix (if they exist) from paymentRequestNumber.
-    $order_id = explode(PaymentOffsiteForm::ORDER_ID_SUFFIX_SEPARATOR, $data['paymentRequestNumber'])[0]  ?? 0;
+    $order_id_parts = explode(PaymentOffsiteForm::ORDER_ID_SUFFIX_SEPARATOR, $data['paymentRequestNumber']);
+    $order_id = $order_id_parts[0] ?? 0;
 
     /** @var \Drupal\commerce_order\OrderStorageInterface $order_storage */
     $order_storage = $this->entityTypeManager->getStorage('commerce_order');
