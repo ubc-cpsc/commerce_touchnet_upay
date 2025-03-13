@@ -9,6 +9,6 @@
     "homepage": "https://github.com/ubc-cpsc/commerce_touchnet_upay",
     "license": "GPL-2.0-or-later",
     "require": {
-        "drupal/commerce": "^2.0"
+        "drupal/commerce": "^2.0|^3.0"
     }
 }
