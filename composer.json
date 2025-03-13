@@ -10,5 +10,8 @@
     "license": "GPL-2.0-or-later",
     "require": {
         "drupal/commerce": "^2.0|^3.0"
+    },
+    "require-dev": {
+        "drush/drush": "^13.0"
     }
 }
